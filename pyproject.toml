@@ -23,5 +23,11 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+# preprocessing.py: verbatim port of notebook cells (research/extracted/cell_ct.py,
+# cell_params_top_pipe.py) — long lines and long comments must stay byte-identical
+# to the source, so line-length is not enforced here.
+"model/houseprice_model/preprocessing.py" = ["E501"]
+
 [tool.pytest.ini_options]
 testpaths = ["model/tests"]
