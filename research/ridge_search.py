@@ -54,6 +54,7 @@ def main() -> None:
         n_jobs=-1,
         refit=True,
         return_train_score=True,
+        error_score="raise",
     )
     search.fit(X_train, y_train)
 

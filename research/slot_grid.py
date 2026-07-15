@@ -168,7 +168,8 @@ def build_slot_grid() -> dict:
         #'ct__OverallQual__disc': ['passthrough', disc.EqualFrequencyDiscretiser(q=10)],
 
 
-        'ct__OverallCond__drop': ['passthrough', 'drop'],
+        # 'drop' невалиден в шаге Pipeline (только в ColumnTransformer) — бага тетрадки, зафиксирована 2026-07-15
+        'ct__OverallCond__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
         #'ct__MoSold__rare': ['passthrough', fe.RareLabelEncoder(tol=0.04, n_categories=2, ignore_format=True)],
@@ -188,7 +189,8 @@ def build_slot_grid() -> dict:
         'ct__MasVnrType': ['passthrough', 'drop'],
 
 
-        'ct__MasVnrArea__drop': ['passthrough', 'drop'],
+        # 'drop' невалиден в шаге Pipeline (только в ColumnTransformer) — бага тетрадки, зафиксирована 2026-07-15
+        'ct__MasVnrArea__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
         'ct__ExterCond': ['passthrough', 'drop'],
@@ -201,7 +203,8 @@ def build_slot_grid() -> dict:
         'ct__HeatingQC': ['passthrough', 'drop'],
 
 
-        'ct__CentralAir__drop': ['passthrough', 'drop'],
+        # 'drop' невалиден в шаге Pipeline (только в ColumnTransformer) — бага тетрадки, зафиксирована 2026-07-15
+        'ct__CentralAir__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
         'ct__TotalBsmtSF__outlier':   ['passthrough',
@@ -237,7 +240,8 @@ def build_slot_grid() -> dict:
 
         'ct__2ndFlrSF__outlier':    ['passthrough',
                                     outl.Winsorizer(capping_method='quantiles', tail='both', fold=0.01)],
-        'ct__2ndFlrSF__drop':       ['passthrough', 'drop'],
+        # 'drop' невалиден в шаге Pipeline (только в ColumnTransformer) — бага тетрадки, зафиксирована 2026-07-15
+        'ct__2ndFlrSF__drop':       ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
         'ct__KitchenQual':       ['passthrough', 'drop'],

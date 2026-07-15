@@ -10,7 +10,23 @@
 import json
 from pathlib import Path
 
+from sklearn.preprocessing import FunctionTransformer
+
 DEFAULT_OUT = Path(__file__).resolve().parents[2] / "research"
+
+
+def _repr_evalable(v: object) -> str:
+    """repr(), но round-trip-safe для FunctionTransformer.
+
+    repr(FunctionTransformer(f)) делегирует к repr() объекта функции ->
+    `<function f at 0x...>` (адрес в памяти, невалидный Python). Нормализуем
+    к `FunctionTransformer(<module>.<func>)`, что eval-ится обратно.
+    """
+    if isinstance(v, FunctionTransformer):
+        func = v.func
+        alias = "np" if func.__module__.startswith("numpy") else func.__module__
+        return f"FunctionTransformer({alias}.{func.__name__})"
+    return repr(v)
 
 
 def freeze_params(
@@ -19,7 +35,9 @@ def freeze_params(
     """Пишет <name>_best_params.json и <name>_frozen_draft.py, возвращает пути."""
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    frozen = {k.removeprefix("regressor__"): repr(v) for k, v in best_params.items()}
+    frozen = {
+        k.removeprefix("regressor__"): _repr_evalable(v) for k, v in best_params.items()
+    }
 
     json_path = out / f"{name}_best_params.json"
     json_path.write_text(json.dumps(frozen, indent=2, ensure_ascii=False) + "\n")
