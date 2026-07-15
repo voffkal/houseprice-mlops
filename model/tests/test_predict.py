@@ -1,8 +1,9 @@
 import numpy as np
+import pandas as pd
 import pytest
 from houseprice_model import __version__
 from houseprice_model.data import load_raw
-from houseprice_model.predict import make_prediction
+from houseprice_model.predict import coerce_to_schema, make_prediction
 
 
 @pytest.fixture()
@@ -48,3 +49,12 @@ def test_predict_accepts_list_of_dicts(trained, sample_rows):
     records = sample_rows.to_dict(orient="records")
     result = make_prediction(records, artifacts_dir=str(artifacts_dir))
     assert len(result["predictions"]) == 3
+
+
+def test_coerce_int_column_with_nan_degrades_to_float64():
+    schema = {"A": "int64", "B": "object"}
+    df = pd.DataFrame({"A": [1, np.nan], "B": ["x", "y"]})
+    out = coerce_to_schema(df, schema)
+    assert str(out["A"].dtype) == "float64"
+    assert out["A"].iloc[0] == 1.0
+    assert np.isnan(out["A"].iloc[1])
