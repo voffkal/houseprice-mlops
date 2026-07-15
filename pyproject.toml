@@ -1,0 +1,27 @@
+[project]
+name = "houseprice-mlops"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = ["houseprice-model"]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["model"]
+
+[tool.uv.sources]
+houseprice-model = { workspace = true }
+
+[dependency-groups]
+dev = ["pytest>=8.2", "ruff>=0.5"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["model/tests"]

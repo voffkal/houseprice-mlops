@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+.DS_Store
+model/houseprice_model/artifacts/*
+!model/houseprice_model/artifacts/.gitkeep
+model/houseprice_model/datasets/
+research/extracted/
+*.joblib
