@@ -1,0 +1,13 @@
+# Скалярные решения проекта. Объектный граф пайплайна живёт в builders/ (код).
+target: SalePrice
+test_size: 0.28
+random_state: 0
+
+# Политика обучающих данных (EDA-решение из тетрадки, ячейка стекинга)
+train_filter:
+  enabled: true
+  sale_condition: [Normal, Partial]
+  grlivarea_max: 5050
+
+# Метрический гейт CI: тест падает, если test RMSLE хуже. Уточняется после первого train.
+metric_threshold_rmsle: 0.16
