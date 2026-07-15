@@ -39,6 +39,13 @@ select = ["E", "F", "I", "UP", "B"]
 # slot_grid.py: verbatim port of research/extracted/cell_factories.py + the
 # `params = {...}` dict from cell_params_top_pipe.py — same rationale as above.
 "research/slot_grid.py" = ["E501"]
+# v01_ridge.py: FROZEN_RIDGE_PARAMS is transferred verbatim from
+# research/ridge_frozen_draft.py (Task 5 search winner) — values are not
+# hand-edited, so long constructor calls can't be wrapped by hand. `ruff
+# format` would fix the one long line but also rewrites quote style across
+# the whole verbatim dict, which is exactly the "clean up the repr" this
+# file must avoid — so line-length is ignored here instead.
+"model/houseprice_model/builders/v01_ridge.py" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["model/tests"]
