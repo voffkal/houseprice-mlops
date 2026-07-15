@@ -1,3 +1,6 @@
+# Отклонение от тетрадки (2026-07-15): unseen='ignore'→'encode' во всех энкодерах —
+# 'ignore' даёт NaN на незнакомых категориях (падение в CV и в проде);
+# 'encode' реализует исходный замысел «не падать» (-1/0, как в MapEncoder).
 import feature_engine.encoding as fe
 import numpy as np
 from houseprice_model.data import load_raw
@@ -11,7 +14,7 @@ from sklearn.linear_model import Ridge
 # заморозит builder v0.1 (Task 6).
 ENCODE_OVERRIDES = {
     f"ct__{col}__encode": fe.OrdinalEncoder(
-        encoding_method="arbitrary", unseen="ignore", ignore_format=True
+        encoding_method="arbitrary", unseen="encode", ignore_format=True
     )
     for col in ["Neighborhood", "SaleCondition", "SaleType"]
 }

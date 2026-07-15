@@ -40,7 +40,8 @@ def main() -> None:
         ],
         "scaler": [pp.MaxAbsScaler()],
         "model__alpha": loguniform(1e-2, 1e2),
-        # 'lbfgs' требует positive=True — невозможная опция, убрана 2026-07-15 (та же бага, что 'drop'-слоты)
+        # 'lbfgs' требует positive=True — невозможная опция, убрана 2026-07-15
+        # (та же бага, что 'drop'-слоты)
         "model__solver": ["svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"],
     }
     ridge_params = {f"regressor__{k}": v for k, v in grid.items()}

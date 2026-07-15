@@ -2,6 +2,10 @@
 
 Слоты CT намеренно содержат значения по умолчанию из тетрадки; победившие
 варианты серча применяются поверх через set_params в builders/.
+
+Отклонение от тетрадки (2026-07-15): unseen='ignore'→'encode' во всех энкодерах —
+'ignore' даёт NaN на незнакомых категориях (падение в CV и в проде);
+'encode' реализует исходный замысел «не падать» (-1/0, как в MapEncoder).
 """
 
 import feature_engine.encoding as fe
@@ -27,14 +31,14 @@ def build_ct() -> ColumnTransformer:
         ('Electrical', Pipeline([
             ('impute', mdi.CategoricalImputer(imputation_method='frequent', ignore_format=True)),
             ('rare',   'passthrough'),
-            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True)),
+            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True)),
             ('drop', 'passthrough')
         ]), ['Electrical']),
 
         ('MSSubClass', Pipeline([
             ('impute', mdi.CategoricalImputer(imputation_method='frequent', ignore_format=True)),
             ('rare',   'passthrough'),
-            ('encode', fe.CountFrequencyEncoder(encoding_method='frequency', unseen='ignore', ignore_format=True)),
+            ('encode', fe.CountFrequencyEncoder(encoding_method='frequency', unseen='encode', ignore_format=True)),
             ('drop', 'passthrough')
         ]), ['MSSubClass']),
 
@@ -61,24 +65,24 @@ def build_ct() -> ColumnTransformer:
 
         ('LotShape', Pipeline([
             ('rare',   'passthrough'),
-            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True)),
+            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True)),
             ('drop', 'passthrough')
         ]), ['LotShape']),
 
         ('LandContour', Pipeline([
             ('rare',   'passthrough'),
-            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True)),
+            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True)),
             ('drop', 'passthrough')
         ]), ['LandContour']),
 
         ('LotConfig', Pipeline([
             ('rare',   'passthrough'),
-            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True)),
+            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True)),
             ('drop', 'passthrough')
         ]), ['LotConfig']),
 
         ('LandSlope', Pipeline([
-            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True)),
+            ('encode', fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True)),
             ('drop', 'passthrough')
         ]), ['LandSlope']),
 

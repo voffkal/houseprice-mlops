@@ -1,5 +1,9 @@
 """Грид вариантов слотов CT для RandomizedSearchCV (порт ячеек фабрик и params)."""
 
+# Отклонение от тетрадки (2026-07-15): unseen='ignore'→'encode' во всех энкодерах —
+# 'ignore' даёт NaN на незнакомых категориях (падение в CV и в проде);
+# 'encode' реализует исходный замысел «не падать» (-1/0, как в MapEncoder).
+
 import category_encoders as ce  # noqa: F401  (используется внутри грида Neighborhood)
 import feature_engine.discretisation as disc
 import feature_engine.encoding as fe
@@ -74,10 +78,10 @@ def make_encoders(passthrough=False, tree_models: bool = True):
     """
     return [
         fe.OneHotEncoder(drop_last_binary=True, ignore_format=True),
-        *([fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True)] if tree_models else []),
-        *([fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True)] if tree_models else []),
-        *([fe.CountFrequencyEncoder(encoding_method='frequency', unseen='ignore', ignore_format=True)] if tree_models else []),
-        *([fe.CountFrequencyEncoder(encoding_method='count', ignore_format=True)] if tree_models else []),
+        *([fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True)] if tree_models else []),
+        *([fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True)] if tree_models else []),
+        *([fe.CountFrequencyEncoder(encoding_method='frequency', unseen='encode', ignore_format=True)] if tree_models else []),
+        *([fe.CountFrequencyEncoder(encoding_method='count', unseen='encode', ignore_format=True)] if tree_models else []),  # без unseen= работал бы дефолт 'ignore' — тот же NaN
         *(['passthrough'] if passthrough else []),
     ]
 
@@ -99,20 +103,20 @@ def build_slot_grid() -> dict:
     params = {
 
         'ct__Electrical__rare':   ['passthrough', fe.RareLabelEncoder(n_categories=2, max_n_categories=1, tol=0.90, ignore_format=True)],
-        'ct__Electrical__encode': [fe.OrdinalEncoder(encoding_method='arbitrary', unseen='ignore', ignore_format=True),
+        'ct__Electrical__encode': [fe.OrdinalEncoder(encoding_method='arbitrary', unseen='encode', ignore_format=True),
                                    fe.OneHotEncoder(drop_last=False, ignore_format=True)],
         'ct__Electrical__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
         'ct__MSSubClass__rare':   ['passthrough', fe.RareLabelEncoder(n_categories=2, max_n_categories=4, tol=0.1, ignore_format=True)],
-        'ct__MSSubClass__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True),
+        'ct__MSSubClass__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True),
                                    fe.OneHotEncoder(drop_last=False, ignore_format=True),],
         'ct__MSSubClass__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
         'ct__MSZoning__rare':   ['passthrough', fe.RareLabelEncoder(n_categories=2, max_n_categories=2, tol=0.1, ignore_format=True)],
-        'ct__MSZoning__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True),
-                                 #fe.CountFrequencyEncoder(encoding_method='frequency', unseen='ignore', ignore_format=True),
+        'ct__MSZoning__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True),
+                                 #fe.CountFrequencyEncoder(encoding_method='frequency', unseen='encode', ignore_format=True),
                                  fe.OneHotEncoder(drop_last=False, ignore_format=True),],
         'ct__MSZoning__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
@@ -130,7 +134,7 @@ def build_slot_grid() -> dict:
 
 
         'ct__LotShape__rare':   ['passthrough', fe.RareLabelEncoder(n_categories=2, tol=0.05, ignore_format=True)],
-        'ct__LotShape__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True),
+        'ct__LotShape__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True),
                                  fe.OneHotEncoder(drop_last=True, drop_last_binary=True, ignore_format=True)],
         'ct__LotShape__drop': ['passthrough', FunctionTransformer(np.zeros_like)],
 
@@ -145,7 +149,7 @@ def build_slot_grid() -> dict:
 
 
         'ct__Neighborhood__rare':   ['passthrough', fe.RareLabelEncoder(n_categories=2, tol=0.20, ignore_format=True)],
-        'ct__Neighborhood__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True),  # кросс-модельный
+        'ct__Neighborhood__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True),  # кросс-модельный
                                      fe.OneHotEncoder(drop_last=True, ignore_format=True),        # лучший для Ridge
                                      ce.TargetEncoder(cols=['Neighborhood'], smoothing=20)],       # хорош для RF (mean, сглаж.)],
 
@@ -161,7 +165,7 @@ def build_slot_grid() -> dict:
 
         'ct__HouseStyle__rare':   ['passthrough', fe.RareLabelEncoder(tol=0.04, n_categories=2, ignore_format=True)],
         #'ct__HouseStyle__encode': [fe.OneHotEncoder(drop_last=True, ignore_format=True),
-        #                           fe.CountFrequencyEncoder(encoding_method='frequency', unseen='ignore', ignore_format=True)],
+        #                           fe.CountFrequencyEncoder(encoding_method='frequency', unseen='encode', ignore_format=True)],
         'ct__HouseStyle__encode': make_encoders(passthrough=False),
 
 
@@ -173,14 +177,14 @@ def build_slot_grid() -> dict:
 
 
         #'ct__MoSold__rare': ['passthrough', fe.RareLabelEncoder(tol=0.04, n_categories=2, ignore_format=True)],
-        'ct__MoSold__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True),
+        'ct__MoSold__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True),
                                fe.OneHotEncoder(drop_last=True, ignore_format=True),
                                MedianTargetEncoder(m=20)],
         'ct__MoSold__drop':  ['passthrough', FunctionTransformer(np.zeros_like)],
 
 
-        'ct__YrSold__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True),
-                               fe.CountFrequencyEncoder(encoding_method='frequency',unseen='ignore', ignore_format=True),
+        'ct__YrSold__encode': [fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True),
+                               fe.CountFrequencyEncoder(encoding_method='frequency',unseen='encode', ignore_format=True),
                                fe.OneHotEncoder(drop_last=True, ignore_format=True),
                                MedianTargetEncoder(m=5)],
         'ct__YrSold__drop':  ['passthrough', FunctionTransformer(np.zeros_like)],
@@ -197,7 +201,7 @@ def build_slot_grid() -> dict:
 
 
         'ct__Exterior1st__encode': [fe.OneHotEncoder(drop_last=True, ignore_format=True),
-                                    fe.OrdinalEncoder(encoding_method='ordered', unseen='ignore', ignore_format=True)],
+                                    fe.OrdinalEncoder(encoding_method='ordered', unseen='encode', ignore_format=True)],
 
 
         'ct__HeatingQC': ['passthrough', 'drop'],
