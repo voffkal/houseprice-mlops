@@ -10,4 +10,4 @@ train_filter:
   grlivarea_max: 5050
 
 # Метрический гейт CI: тест падает, если test RMSLE хуже. Уточняется после первого train.
-metric_threshold_rmsle: 0.122
+metric_threshold_rmsle: 0.121
