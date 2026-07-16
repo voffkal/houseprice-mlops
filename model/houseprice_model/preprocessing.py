@@ -143,6 +143,7 @@ def build_ct() -> ColumnTransformer:
         ('ExterCond', 'passthrough', ['ExterCond']),
 
         ('Exterior1st', Pipeline([
+            ('imputer', mdi.CategoricalImputer(imputation_method='frequent', ignore_format=True)),
             ('rare',   fe.RareLabelEncoder(tol=0.03, n_categories=4, ignore_format=True)),
             ('encode', fe.OneHotEncoder(drop_last=True, ignore_format=True)),
         ]), ['Exterior1st']),
@@ -248,11 +249,13 @@ def build_ct() -> ColumnTransformer:
         ('PavedDrive', 'passthrough', ['PavedDrive']),
 
         ('SaleCondition', Pipeline([
+            ('imputer', mdi.CategoricalImputer(imputation_method='frequent', ignore_format=True)),
             ('rare',   'passthrough'),
             ('encode', 'passthrough'),
         ]), ['SaleCondition']),
 
         ('SaleType', Pipeline([
+            ('imputer', mdi.CategoricalImputer(imputation_method='frequent', ignore_format=True)),
             ('rare',   'passthrough'),
             ('encode', 'passthrough'),
         ]), ['SaleType']),
@@ -289,6 +292,16 @@ def build_top_pipe() -> Pipeline:
             ])),
         ('map', MapEncoder(QUAL_MAPS, NA_FILLERS, unseen=-1)),
         ('lotfrontage_imputer', GroupMedianImputer(target='LotFrontage', group='Neighborhood')),
+        # NaN = «объекта нет» -> 0 (та же логика, что NA_FILLERS='NoBasement'/'NoGarage').
+        # Импутация ДО ct обязательна: CT раздаёт слотам сырые колонки, и poly-слот
+        # получал NaN в обход слотовых импьютеров (kaggle-экзамен 2026-07-17, Id 2121/2577).
+        ('impute_no_object', mdi.ArbitraryNumberImputer(
+            arbitrary_number=0,
+            variables=['TotalBsmtSF', 'GarageCars', 'GarageArea', 'BsmtFinSF1'])),
+        # Защитный: в train/test не встречается, но контракт «модель не падает на NaN»
+        ('impute_core', mdi.MeanMedianImputer(
+            imputation_method='median',
+            variables=['OverallQual', 'GrLivArea', 'YearBuilt'])),
         ('condition', ConditionFlags()),
         ("ct", build_ct()),
         ('drop_constant', DropConstantFeatures(tol=0.98)),
