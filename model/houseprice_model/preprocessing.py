@@ -114,7 +114,6 @@ def build_ct() -> ColumnTransformer:
         ('near_road',     'passthrough', ['near_road']),
 
         ('YearBuilt', 'passthrough', ['YearBuilt']),
-        #MoSold, YrSold, флаги ремонта — не добавлять. Подтверждено замером, а не интуицией: ни сырьём, ни target-encoder, ни флагом сигнала к цене не извлекается. Из всей временнóй группы в модель идёт только YearBuilt (raw passthrough).
 
         ('MoSold', Pipeline([
             #('rare',   'passthrough'),
