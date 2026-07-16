@@ -49,3 +49,10 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["model/tests"]
+filterwarnings = [
+    # joblib 1.5 внутри numpy_pickle.py присваивает array.shape — депрекейчено в
+    # NumPy 2.5 (срабатывает при joblib.load наших артефактов). Не наш код;
+    # узкий фильтр, чтобы вывод тестов оставался стерильным. Убрать, когда
+    # joblib обновит numpy_pickle (следить при бампах joblib в uv.lock).
+    "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
+]
