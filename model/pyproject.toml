@@ -15,7 +15,10 @@ dependencies = [
 ]
 
 [dependency-groups]
-research = ["category-encoders>=2.6"]
+research = [
+    "category-encoders>=2.6",
+    "xgboost>=3.3.0",
+]
 
 [build-system]
 requires = ["hatchling"]
