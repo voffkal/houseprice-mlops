@@ -10,3 +10,4 @@ model/houseprice_model/datasets/
 research/extracted/
 research/ridge_search.log
 *.joblib
+model_artifacts/

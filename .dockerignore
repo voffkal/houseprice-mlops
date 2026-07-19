@@ -1,0 +1,11 @@
+.git
+.venv
+.superpowers
+.ruff_cache
+.pytest_cache
+**/__pycache__
+model/houseprice_model/datasets
+model/houseprice_model/artifacts
+research/extracted
+research/*.log
+docs
