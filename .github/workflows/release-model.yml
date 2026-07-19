@@ -27,9 +27,11 @@ jobs:
       - name: Fetch dataset from Kaggle
         if: steps.data-cache.outputs.cache-hit != 'true'
         env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_ACCESS_TOKEN: ${{ secrets.KAGGLE_ACCESS_TOKEN }}
         run: |
+          mkdir -p ~/.kaggle
+          printf '%s' "$KAGGLE_ACCESS_TOKEN" > ~/.kaggle/access_token
+          chmod 600 ~/.kaggle/access_token
           mkdir -p model/houseprice_model/datasets
           uvx --from kaggle kaggle competitions download \
             -c house-prices-advanced-regression-techniques \
