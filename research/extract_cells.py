@@ -1,12 +1,14 @@
-"""Извлекает продакшн-ячейки Houseprice.ipynb в research/extracted/ по маркерам."""
+"""Извлекает продакшн-ячейки исследовательской тетрадки в research/extracted/ по маркерам.
+
+Путь к тетрадке задаётся переменной окружения HOUSEPRICE_NOTEBOOK —
+тетрадка живёт вне репозитория (research-воркспейс автора).
+"""
 
 import json
+import os
 from pathlib import Path
 
-NB = Path(
-    "/Users/voffkal/Documents/AgentsSystem/DataScience/"
-    "INBOX/Junior_level/Projects/Houseprice/Houseprice.ipynb"
-)
+NB = Path(os.environ.get("HOUSEPRICE_NOTEBOOK", "Houseprice.ipynb")).expanduser()
 OUT = Path(__file__).parent / "extracted"
 
 MARKERS = {

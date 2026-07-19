@@ -11,3 +11,4 @@ research/extracted/
 research/ridge_search.log
 *.joblib
 model_artifacts/
+.superpowers/
