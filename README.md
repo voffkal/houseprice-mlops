@@ -45,7 +45,7 @@ curl -X POST localhost:8001/api/v1/predict -H 'Content-Type: application/json' \
   -d '{"inputs": [{"GrLivArea": 1710, "OverallQual": 7, "YearBuilt": 2003, "Neighborhood": "CollgCr"}]}'
 # {"predictions": [208500.0], "model_version": "0.1.2"}
 ```
-Все 80 полей опциональны: пайплайн сам импутирует пропуски (проверено на сыром
+Все 80 полей опциональны: пайплайн сам заполняет пропуски (проверено на сыром
 kaggle-тесте, включая дома без подвала/гаража).
 
 ## Честность цифр
