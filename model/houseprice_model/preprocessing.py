@@ -301,7 +301,17 @@ def build_top_pipe() -> Pipeline:
         # Защитный: в train/test не встречается, но контракт «модель не падает на NaN»
         ('impute_core', mdi.MeanMedianImputer(
             imputation_method='median',
-            variables=['OverallQual', 'GrLivArea', 'YearBuilt'])),
+            variables=['OverallQual', 'GrLivArea', 'YearBuilt', 'LotArea', 'OverallCond',
+                       'MoSold', 'YrSold', '1stFlrSF', '2ndFlrSF', 'BedroomAbvGr'])),
+        # Защитный (API-контракт "пустой дом легален", план 2): эти категориальные
+        # колонки не покрыты ни QUAL_MAPS/NA_FILLERS, ни собственным impute-шагом
+        # внутри своего слота CT -> полностью пустой запрос ронял ct с "Some of the
+        # variables in the dataset contain NaN". Мода — нейтральный, не влияющий на
+        # реальные строки (train/test без NaN в этих колонках) заполнитель.
+        ('impute_categorical', mdi.CategoricalImputer(
+            imputation_method='frequent', ignore_format=True,
+            variables=['LotShape', 'LotConfig', 'LandSlope', 'Neighborhood', 'BldgType',
+                       'HouseStyle', 'CentralAir'])),
         ('condition', ConditionFlags()),
         ("ct", build_ct()),
         ('drop_constant', DropConstantFeatures(tol=0.98)),

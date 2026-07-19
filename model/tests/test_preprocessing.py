@@ -28,6 +28,7 @@ def test_top_pipe_step_names_match_notebook():
         "lotfrontage_imputer",
         "impute_no_object",
         "impute_core",
+        "impute_categorical",
         "condition",
         "ct",
         "drop_constant",
@@ -54,6 +55,25 @@ def test_top_pipe_survives_kaggle_test_nans():
     probe["GarageArea"] = np.nan
     probe["Exterior1st"] = np.nan   # NaN-категория, ронявшая RareLabelEncoder
     probe["SaleType"] = np.nan
+    preds = pipe.predict(probe)
+    assert np.isfinite(preds).all()
+
+
+def test_top_pipe_survives_fully_empty_row():
+    """Регрессия плана 2 (деплой API, Task 3): запрос без единого заполненного
+    поля должен предсказывать, а не ронять пайплайн. LotArea/LotShape/LotConfig/
+    LandSlope/Neighborhood/BldgType/HouseStyle/OverallCond/MoSold/YrSold/CentralAir/
+    1stFlrSF/2ndFlrSF/BedroomAbvGr не покрыты ни QUAL_MAPS/NA_FILLERS, ни своим
+    impute-шагом внутри слота CT — в train/test эти колонки всегда заполнены, но
+    полностью пустой API-запрос (все поля None) обнажает пробел."""
+    df = load_raw().head(400)
+    X, y = df.drop(columns=["SalePrice"]), df["SalePrice"]
+    pipe = build_top_pipe()
+    pipe.set_params(model=Ridge(random_state=0), **ENCODE_OVERRIDES)
+    pipe.fit(X, np.log1p(y))
+
+    probe = X.tail(1).astype(object)
+    probe.loc[:, :] = np.nan
     preds = pipe.predict(probe)
     assert np.isfinite(preds).all()
 
