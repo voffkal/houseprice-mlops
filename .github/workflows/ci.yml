@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lint
+        run: |
+          uv sync --locked
+          uv run ruff check .
+
+      - name: Restore dataset cache
+        id: data-cache
+        uses: actions/cache@v4
+        with:
+          path: model/houseprice_model/datasets/train.csv
+          key: kaggle-house-prices-train-v1
+
+      - name: Fetch dataset from Kaggle
+        if: steps.data-cache.outputs.cache-hit != 'true'
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p model/houseprice_model/datasets
+          uvx --from kaggle kaggle competitions download \
+            -c house-prices-advanced-regression-techniques \
+            -f train.csv -p model/houseprice_model/datasets
+          cd model/houseprice_model/datasets
+          if [ -f train.csv.zip ]; then unzip -o train.csv.zip && rm train.csv.zip; fi
+
+      - name: Tests (incl. metric gate)
+        run: uv run pytest -q
