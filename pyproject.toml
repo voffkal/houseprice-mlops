@@ -58,5 +58,5 @@ filterwarnings = [
     "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
     # starlette.testclient предупреждает о будущем переходе на httpx2 — вопрос
     # стека fastapi/starlette, не наш; убрать при бампе starlette в uv.lock.
-    "ignore:Using `httpx` with `starlette.testclient` is deprecated:DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
 ]
