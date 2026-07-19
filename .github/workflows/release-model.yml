@@ -1,0 +1,57 @@
+name: release-model
+
+on:
+  push:
+    tags: ["model-v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  train-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore dataset cache
+        id: data-cache
+        uses: actions/cache@v4
+        with:
+          path: model/houseprice_model/datasets/train.csv
+          key: kaggle-house-prices-train-v1
+
+      - name: Fetch dataset from Kaggle
+        if: steps.data-cache.outputs.cache-hit != 'true'
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          mkdir -p model/houseprice_model/datasets
+          uvx --from kaggle kaggle competitions download \
+            -c house-prices-advanced-regression-techniques \
+            -f train.csv -p model/houseprice_model/datasets
+          cd model/houseprice_model/datasets
+          if [ -f train.csv.zip ]; then unzip -o train.csv.zip && rm train.csv.zip; fi
+
+      - name: Gate (полная сюита, включая метрический гейт)
+        run: |
+          uv sync --locked
+          uv run pytest -q
+
+      - name: Train release artifact
+        run: uv run python -m houseprice_model.train
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES=$(uv run python -c "import json; m=json.load(open('model/houseprice_model/artifacts/metrics.json')); print(f\"test RMSLE {m['metrics']['test']['rmsle']:.5f} | cv {m['cv_rmsle']['mean']:.4f}±{m['cv_rmsle']['std']:.4f} | MAPE {m['metrics']['test']['mape']*100:.1f}% | baseline lift {m['baseline']['lift_pct']:.1f}% | sklearn {m['sklearn']}\")")
+          gh release create "$GITHUB_REF_NAME" \
+            model/houseprice_model/artifacts/houseprice_model-*.joblib \
+            model/houseprice_model/artifacts/input_schema.json \
+            model/houseprice_model/artifacts/metrics.json \
+            --title "$GITHUB_REF_NAME" --notes "$NOTES"
