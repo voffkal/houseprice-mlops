@@ -14,10 +14,12 @@ serve: image
 	docker compose up -d api
 	@echo "API: http://localhost:8001/docs"
 
-demo: image
-	TUNNEL_TOKEN=$$(security find-generic-password -s agents-system -a houseprice-tunnel -w) \
-		docker compose --profile demo up -d
-	@echo "Туннель поднят; постоянный URL — в дашборде Cloudflare Zero Trust"
+# Временный публичный URL (*.trycloudflare.com) — живёт, пока работает команда.
+# Для постоянного URL нужен свой домен в Cloudflare: тогда named tunnel
+# через compose-профиль demo (TUNNEL_TOKEN) — см. compose.yaml.
+demo: serve
+	@echo "Поднимаю временный публичный URL (Ctrl+C — остановить туннель):"
+	cloudflared tunnel --url http://localhost:8001
 
 stop:
 	docker compose --profile demo down
