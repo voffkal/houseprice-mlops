@@ -2,6 +2,8 @@
 name = "houseprice-model"
 version = "0.1.2"
 description = "House price regression: CT-slot pipeline + Ridge, packaged for deployment"
+license = "MIT"
+authors = [{ name = "Voffkal" }]
 requires-python = ">=3.12"
 dependencies = [
     "pandas>=2.2",

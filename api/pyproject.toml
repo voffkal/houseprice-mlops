@@ -2,6 +2,8 @@
 name = "houseprice-api"
 version = "0.1.0"
 description = "FastAPI service over the houseprice-model predictor"
+license = "MIT"
+authors = [{ name = "Voffkal" }]
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
