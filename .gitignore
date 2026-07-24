@@ -6,9 +6,14 @@ __pycache__/
 .DS_Store
 model/houseprice_model/artifacts/*
 !model/houseprice_model/artifacts/.gitkeep
+# версионные метрики — лёгкие, храним в git для истории и make compare
+!model/houseprice_model/artifacts/metrics-*.json
 model/houseprice_model/datasets/
 research/extracted/
 research/ridge_search.log
 *.joblib
 model_artifacts/
 .superpowers/
+.sollution
+/workbook
+submission.csv
