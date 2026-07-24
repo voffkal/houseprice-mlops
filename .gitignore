@@ -11,6 +11,9 @@ model/houseprice_model/artifacts/*
 model/houseprice_model/datasets/
 research/extracted/
 research/ridge_search.log
+# устаревший срез старого стека (канон — notebook_stack_v2/); содержал
+# exam-скрипт со сверкой против ответов — в репо не возвращать.
+research/notebook_stack/
 *.joblib
 model_artifacts/
 .superpowers/
