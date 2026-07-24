@@ -3,6 +3,56 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import PolynomialFeatures
+
+
+class Interactions(BaseEstimator, TransformerMixin):
+    """PolynomialFeatures БЕЗ дублирования оригиналов: только члены степени >= 2.
+
+    Зачем: в слоте ct__poly колонки уже есть в матрице из своих собственных слотов
+    (OverallQual -> passthrough, GrLivArea -> outlier+transform...). Штатный
+    PolynomialFeatures возвращает их ВТОРОЙ раз (5 из 15 колонок) — сырые копии
+    рядом с преобразованными => коллинеарность без пользы. Здесь выход обрезан
+    до чистых взаимодействий: 5 колонок -> 10, а не 15.
+
+    Отбор по powers_ (матрица показателей степеней — первоисточник sklearn),
+    а не по позиции и не по пробелу в имени: не зависит от числа колонок, degree
+    и порядка. include_bias=True тоже отсекается (степень 0).
+    interaction_only=False -> квадраты (степень 2) ОСТАЮТСЯ, это осознанно.
+
+    Композиция, а не наследование от PolynomialFeatures: при наследовании
+    set_output(transform='pandas') оборачивает и родительский transform, и наш —
+    родительские 15 колонок получают наши 10 имён и pandas падает
+    'Length mismatch'. Внутренний экземпляр отдаёт numpy, обёртка одна. Picklable.
+    """
+
+    def __init__(self, degree=2, interaction_only=True, include_bias=False):
+        self.degree = degree
+        self.interaction_only = interaction_only
+        self.include_bias = include_bias
+
+    def fit(self, X, y=None):
+        self.poly_ = PolynomialFeatures(
+            degree=self.degree,
+            interaction_only=self.interaction_only,
+            include_bias=self.include_bias,
+        ).fit(X)
+        self.keep_ = self.poly_.powers_.sum(axis=1) >= 2   # 0=bias, 1=оригиналы -> вон
+        if not self.keep_.any():                           # degree=1 или одна колонка
+            raise ValueError(
+                f"Interactions: нечего оставить (degree={self.degree}, "
+                f"колонок={self.poly_.n_features_in_}). Нужно >= 2 колонок и degree >= 2."
+            )
+        self.n_features_in_ = self.poly_.n_features_in_
+        return self
+
+    def transform(self, X):
+        # np.asarray: страховка на случай глобального set_config(transform_output='pandas'),
+        # при котором внутренний poly_ вернул бы DataFrame и маска по [:, mask] не сработала
+        return np.asarray(self.poly_.transform(X))[:, self.keep_]
+
+    def get_feature_names_out(self, input_features=None):
+        return self.poly_.get_feature_names_out(input_features)[self.keep_]
 
 
 class MapEncoder(BaseEstimator, TransformerMixin):

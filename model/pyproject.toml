@@ -1,7 +1,7 @@
 [project]
 name = "houseprice-model"
-version = "0.1.2"
-description = "House price regression: CT-slot pipeline + Ridge, packaged for deployment"
+version = "0.2.0"
+description = "House price regression: CT-slot pipeline + 10-model stack, packaged for deployment"
 license = "MIT"
 authors = [{ name = "Voffkal" }]
 requires-python = ">=3.12"
@@ -14,12 +14,11 @@ dependencies = [
     "joblib>=1.4",
     "pydantic>=2.7",
     "pyyaml>=6.0",
-]
-
-[dependency-groups]
-research = [
+    # v0.2: базовые ученики стека нужны в РАНТАЙМЕ — артефакт при загрузке
+    # распаковывает XGBRegressor/LGBMRegressor/TargetEncoder.
     "category-encoders>=2.6",
     "xgboost>=3.3.0",
+    "lightgbm>=4.5",
 ]
 
 [build-system]

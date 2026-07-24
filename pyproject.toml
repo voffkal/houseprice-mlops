@@ -47,6 +47,10 @@ select = ["E", "F", "I", "UP", "B"]
 # the whole verbatim dict, which is exactly the "clean up the repr" this
 # file must avoid — so line-length is ignored here instead.
 "model/houseprice_model/builders/v01_ridge.py" = ["E501"]
+# _v02_params.py: 10 наборов frozen-слотов стека, СГЕНЕРИРОВАНЫ из
+# research/notebook_stack_v2/*.json (см. заголовок файла). Длинные конструкторы
+# репров не переносить руками — тот же принцип, что для v01_ridge.py выше.
+"model/houseprice_model/builders/_v02_params.py" = ["E501"]
 
 [tool.pytest.ini_options]
 testpaths = ["model/tests", "api/app/tests"]

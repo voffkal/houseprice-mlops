@@ -25,17 +25,23 @@ def test_load_raw_returns_full_kaggle_train():
     assert "SalePrice" in df.columns
 
 
-def test_train_filter_drops_rows_and_respects_enabled():
+def test_train_filter_disabled_by_default_in_v02():
+    """v0.2: фильтр выключен — обучение на всех строках (фильтр вредит на kaggle)."""
+    assert config.train_filter.enabled is False
     df = load_raw()
-    filtered = apply_train_filter(df)
+    assert len(apply_train_filter(df)) == len(df)
+
+
+def test_train_filter_logic_when_explicitly_enabled():
+    """Механизм фильтра сохранён и работает, если его включить в конфиге."""
+    df = load_raw()
+    on = Config(
+        **{
+            **config.model_dump(),
+            "train_filter": {**config.train_filter.model_dump(), "enabled": True},
+        }
+    )
+    filtered = apply_train_filter(df, on)
     assert len(filtered) < len(df)
     assert set(filtered["SaleCondition"].unique()) <= {"Normal", "Partial"}
     assert (filtered["GrLivArea"] < config.train_filter.grlivarea_max).all()
-
-    off = Config(
-        **{
-            **config.model_dump(),
-            "train_filter": {**config.train_filter.model_dump(), "enabled": False},
-        }
-    )
-    assert len(apply_train_filter(df, off)) == len(df)
