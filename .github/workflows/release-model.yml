@@ -51,7 +51,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          NOTES=$(uv run python -c "import json; m=json.load(open('model/houseprice_model/artifacts/metrics.json')); print(f\"test RMSLE {m['metrics']['test']['rmsle']:.5f} | cv {m['cv_rmsle']['mean']:.4f}±{m['cv_rmsle']['std']:.4f} | MAPE {m['metrics']['test']['mape']*100:.1f}% | baseline lift {m['baseline']['lift_pct']:.1f}% | sklearn {m['sklearn']}\")")
+          NOTES=$(uv run python -c "import json; m=json.load(open('model/houseprice_model/artifacts/metrics.json')); print(f\"cv RMSLE {m['cv_rmsle']['mean']:.4f}±{m['cv_rmsle']['std']:.4f} (oof {m['cv_rmsle']['oof']:.4f}) | baseline lift {m['baseline']['lift_pct']:.1f}% | R2 {m['metrics']['in_sample']['r2']:.4f} | sklearn {m['sklearn']}\")")
           gh release create "$GITHUB_REF_NAME" \
             model/houseprice_model/artifacts/houseprice_model-*.joblib \
             model/houseprice_model/artifacts/input_schema.json \
