@@ -6,6 +6,12 @@ COPY . .
 RUN uv sync --locked --no-dev --no-editable --package houseprice-api
 
 FROM python:3.12-slim AS runtime
+# libgomp1: OpenMP-рантайм, нужен xgboost и lightgbm (базовые ученики стека v0.2)
+# при импорте. v0.1 (только Ridge) не требовал — отсюда падение "libgomp.so.1:
+# cannot open shared object file" на слим-образе после перехода на стек.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
 RUN adduser --disabled-password --gecos '' api-user
 WORKDIR /opt/houseprice
 COPY --from=builder /opt/houseprice/.venv .venv
