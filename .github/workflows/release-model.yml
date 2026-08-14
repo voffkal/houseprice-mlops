@@ -11,6 +11,16 @@ jobs:
   train-and-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Релиз с таким тегом не должен существовать
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "::error::Релиз $GITHUB_REF_NAME уже опубликован. Артефакт релиза неизменяем: переобучение на переставленном теге дало бы другой .joblib под тем же именем. Нужен новый артефакт — поднимите версию и запушьте новый тег."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v5
