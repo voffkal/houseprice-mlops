@@ -7,6 +7,8 @@ Jupyter → установочный пакет → воспроизводимы
 
 ![ci](https://github.com/voffkal/houseprice-mlops/actions/workflows/ci.yml/badge.svg)
 
+**[Презентация проекта](https://voffkal.github.io/houseprice-mlops/presentation.html)** сколько модель ошибается в долларах, зачем в ней десять моделей вместо одной и где расчёт упирается в предел задачи.
+
 ## Метрики (v0.2.0 — стекинг из 10 базовых моделей + RidgeCV-мета)
 
 | Оценка | RMSLE | Что это |
