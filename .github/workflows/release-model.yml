@@ -6,6 +6,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write      # подпись attestation через Sigstore
+  attestations: write
 
 jobs:
   train-and-release:
@@ -56,6 +58,14 @@ jobs:
 
       - name: Train release artifact
         run: uv run python -m houseprice_model.train
+
+      # Подписанное свидетельство «этот .joblib собран этим workflow из этого коммита».
+      # sha256 в metrics.json лежит рядом с файлом и подменяется вместе с ним;
+      # attestation подделать без запуска нашего workflow нельзя.
+      - name: Attest the artifact
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: model/houseprice_model/artifacts/houseprice_model-*.joblib
 
       - name: Publish GitHub Release
         env:

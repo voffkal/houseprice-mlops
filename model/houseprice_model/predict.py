@@ -8,6 +8,7 @@ import joblib
 import pandas as pd
 
 from houseprice_model import __version__
+from houseprice_model.integrity import verify_artifact
 from houseprice_model.train import ARTIFACTS_DIR
 
 
@@ -17,7 +18,10 @@ def _load(artifacts_dir: str):
     # Безопасность: joblib-артефакт — это pickle, load() исполняет код при
     # десериализации. Грузим ТОЛЬКО собственные артефакты: созданные нашим
     # train.py или скачанные из релиза НАШЕГО репозитория. Чужие .joblib — никогда.
-    model = joblib.load(d / f"houseprice_model-{__version__}.joblib")
+    # Перед load() байты сверяются с sha256 из манифеста: подмена не успеет исполниться.
+    model_path = d / f"houseprice_model-{__version__}.joblib"
+    verify_artifact(model_path, json.loads((d / "metrics.json").read_text()))
+    model = joblib.load(model_path)
     schema: dict[str, str] = json.loads((d / "input_schema.json").read_text())
     return model, schema
 

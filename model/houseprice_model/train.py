@@ -33,6 +33,7 @@ from houseprice_model import __version__
 from houseprice_model.builders import v02_stack
 from houseprice_model.config import config
 from houseprice_model.data import apply_train_filter, load_raw
+from houseprice_model.integrity import artifact_record
 
 ARTIFACTS_DIR = Path(__file__).resolve().parent / "artifacts"
 
@@ -93,7 +94,8 @@ def run_training(artifacts_dir: Path = ARTIFACTS_DIR) -> dict:
     baseline_rmsle = _baseline_cv_rmsle(X, y, cv)
 
     artifacts_dir.mkdir(parents=True, exist_ok=True)
-    joblib.dump(model, artifacts_dir / f"houseprice_model-{__version__}.joblib")
+    model_path = artifacts_dir / f"houseprice_model-{__version__}.joblib"
+    joblib.dump(model, model_path)
 
     dtype_dict = {}
     for col, dtype in X.dtypes.items():
@@ -103,6 +105,8 @@ def run_training(artifacts_dir: Path = ARTIFACTS_DIR) -> dict:
 
     manifest = {
         "model_version": __version__,
+        # sha256 файла модели: predict.py сверяет его до joblib.load (см. integrity.py)
+        "artifact": artifact_record(model_path),
         "metrics": {"in_sample": in_sample},
         "cv_rmsle": {"mean": float(cv_scores.mean()), "std": float(cv_scores.std()),
                      "oof": cv_rmsle_oof},
